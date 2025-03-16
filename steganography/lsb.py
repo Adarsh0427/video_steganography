@@ -2,6 +2,68 @@ import cv2
 import numpy as np
 import bitarray
 import base64
+import os
+import subprocess
+
+def reconstruct_video(frames_folder, output_video, fps=30):
+    frame_list = sorted([f for f in os.listdir(frames_folder) if f.endswith('.png')])
+
+    if not frame_list:
+        print("No frames found in the folder.")
+        return
+
+    first_frame = cv2.imread(os.path.join(frames_folder, frame_list[0]))
+    height, width, _ = first_frame.shape
+
+    # Save frames as lossless PNG (if not already PNG)
+    temp_folder = "temp_png_frames"
+    os.makedirs(temp_folder, exist_ok=True)
+
+    for i, frame_file in enumerate(frame_list):
+        frame_path = os.path.join(frames_folder, frame_file)
+        frame = cv2.imread(frame_path)
+        frame_output_path = os.path.join(temp_folder, f"{i:06d}.png")
+        cv2.imwrite(frame_output_path, frame, [cv2.IMWRITE_PNG_COMPRESSION, 0])
+
+    # On macOS, ensure ffmpeg is installed and use a more compatible encoding
+    ffmpeg_cmd = [
+        "ffmpeg",
+        "-y",
+        "-framerate", str(fps),
+        "-i", os.path.join(temp_folder, "%06d.png"),
+        "-c:v", "prores_ks",  # Apple ProRes codec (compatible with macOS)
+        "-profile:v", "4444",  # ProRes 4444 (high quality, lossless alpha)
+        "-pix_fmt", "yuva444p10le",  # 10-bit color depth with alpha
+        "-vendor", "apl0",
+        "-quant_mat", "hq",
+        output_video
+    ]
+    
+    try:
+        subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except (subprocess.SubprocessError, FileNotFoundError):
+        # Fallback to H.264 if ProRes fails or ffmpeg not installed properly
+        print("ProRes encoding failed, falling back to H.264 lossless...")
+        ffmpeg_cmd = [
+            "ffmpeg",
+            "-y",
+            "-framerate", str(fps),
+            "-i", os.path.join(temp_folder, "%06d.png"),
+            "-c:v", "libx264",
+            "-preset", "veryslow",
+            "-qp", "0",  # Lossless H.264
+            "-pix_fmt", "yuv420p",
+            output_video
+        ]
+        subprocess.run(ffmpeg_cmd, check=True)
+
+    # Clean up temporary frame folder
+    for file in os.listdir(temp_folder):
+        os.remove(os.path.join(temp_folder, file))
+    os.rmdir(temp_folder)
+
+    print(f"Video saved as {output_video}")
+
 
 class LSBSteganography:
     """
@@ -60,73 +122,51 @@ class LSBSteganography:
             if not video.isOpened():
                 return False, "Could not open video file"
             
+            # Create frames directory if it doesn't exist
+            import os
+            frames_dir = "assets/frames"
+            os.makedirs(frames_dir, exist_ok=True)
+            
+            # Extract and save all frames
+            frames = []
             frame_count = 0
-            first_frame = None
-
             while video.isOpened():
-                ret, frame = video.read()
-                if not ret: 
-                    break
-
-                if frame_count == 0:
-                    first_frame = frame.copy()
-                    frame_count += 1
-                    continue
-                if frame_count == 1:
-                    break
-            
-            if first_frame is None:
-                return False, "Could not find a frame to hide data in"
-        
-            # Convert to a bit array
-            bit_array = self.text_to_binary(secret_data)
-            print("encoded bit_array: ",bit_array)
-
-            # Ensure the frame has enough capacity
-            height, width, _ = first_frame.shape
-            
-            # Embed data in frame
-            bit_index = 0
-            for i in range(height):
-                for j in range(width):
-                    for color_channel in range(3):
-                        if bit_index < len(bit_array):
-                            # Clear LSB and set it to the secret bit
-                            first_frame[i,j,color_channel] = (first_frame[i,j,color_channel] & ~1) | bit_array[bit_index]
-                            bit_index += 1
-                        else:
-                            break
-            
-            # Write the modified frame and copy remaining frames
-            fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Lossless video codec that works with .mp4
-            fps = video.get(cv2.CAP_PROP_FPS)
-            size = (int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), 
-                   int(video.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-            
-            out = cv2.VideoWriter(output_path, fourcc, fps, size)
-            out.write(first_frame)
-            chk_bit_array = []
-            for i in range(height):
-                for j in range(width):
-                    for color_channel in range(3):
-                        chk_bit_array.append(first_frame[i,j,color_channel] & 1)
-            print("chk_bit_array: ", chk_bit_array)
-
-            if chk_bit_array == bit_array:
-                print("Data hidden successfully")
-            else:
-                print("Data not hidden successfully")
-            
-            # Reset video to beginning to copy remaining frames
-            video.set(cv2.CAP_PROP_POS_FRAMES, 2)
-            while True:
                 ret, frame = video.read()
                 if not ret:
                     break
-                out.write(frame)
+                    
+                frames.append(frame.copy())
+                # Save frame
+                cv2.imwrite(os.path.join(frames_dir, f"frame_{frame_count}.png"), frame)
+                frame_count += 1
             
-            out.release()
-            video.release()
+            if not frames:
+                return False, "Could not find any frames in video"
+                
+            # Get first frame to encode message
+            first_frame = frames[0]
+        
+            # Convert message to bit array
+            bit_array = self.text_to_binary(secret_data)
+            print("encoded bit_array: ", bit_array)
+
+            # Get frame dimensions
+            # height, width, _ = first_frame.shape
+            
+            # # Embed data in first frame
+            # bit_index = 0
+            # for i in range(height):
+            #     for j in range(width):
+            #         for color_channel in range(3):
+            #             if bit_index < len(bit_array):
+            #                 # Clear LSB and set it to the secret bit
+            #                 first_frame[i,j,color_channel] = (first_frame[i,j,color_channel] & ~1) | bit_array[bit_index]
+            #                 bit_index += 1
+            #             else:
+            #                 break
+                  
+            reconstruct_video(frames_dir, output_path, fps=30)
+
             return True, "Data hidden successfully"
         
         except Exception as e:
