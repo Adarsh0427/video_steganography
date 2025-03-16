@@ -43,3 +43,5 @@ logs/
 
 # Application specific
 steganography.log
+assets/frames/
+assets/frames_with_data/
