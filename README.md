@@ -6,7 +6,7 @@ A powerful tool for hiding secret messages inside video files using different st
 ## Features
 ✅ **Multiple Steganography Methods**
   - **LSB (Least Significant Bit)** - Hides data by replacing the least significant bits of pixel values
-  - **DCT (Discrete Cosine Transform)** - Uses frequency domain transformation to hide data more robustly
+  - **VIV (Video In Video)** - Embeds a video file within another video
 
 ✅ **User-Friendly Interface**
   - Intuitive GUI for encoding and decoding operations
@@ -35,11 +35,6 @@ A powerful tool for hiding secret messages inside video files using different st
    pip install -r requirements.txt
    ```
 
-   Alternatively, if you use Poetry:
-   ```bash
-   poetry install
-   ```
-
 ## Usage
 
 ### Running the Application
@@ -48,27 +43,20 @@ Execute the main script:
 python main.py
 ```
 
-Or if using Poetry:
-```bash
-poetry run video-steg
-```
-
 ### Encoding a Message
-1. Select the "Encode Message" tab
+1. Choose a steganography method (LSB or VIV)
 2. Click "Browse" to select an input video file
-3. Enter your secret message in the text area
-4. Choose a steganography method (LSB or DCT)
-5. Optionally enable password protection
+3. Enter your secret message in the text area or Browse for secret video file
 6. Click "Encode Message" to start the process
 7. Wait for the encoding to complete and save the output video
 
 ### Decoding a Message
 1. Select the "Decode Message" tab
-2. Click "Browse" to select a video with a hidden message
-3. Choose the same steganography method that was used for encoding
-4. Enter the password if one was used during encoding
+2. Choose Steganography method (LSB or VIV) [must match the method used for encoding]
+3. Click "Browse" to select a video with a hidden message
+4. [for VIV] Enter output folder to save the extracted video
 5. Click "Decode Message" to extract the hidden data
-6. The decoded message will appear in the text area
+6. The decoded message will appear in the text area or the extracted video will be saved in the output folder 
 
 ## Technical Details
 
@@ -77,8 +65,8 @@ poetry run video-steg
 #### LSB (Least Significant Bit)
 LSB replaces the least significant bits of each color channel (RGB) in the video frames with bits from the secret message. This method offers high capacity but may be less resistant to video processing operations.
 
-#### DCT (Discrete Cosine Transform)
-DCT embeds data in the frequency domain by modifying coefficients after applying a discrete cosine transform to 8x8 pixel blocks. This method is more robust against compression and processing but offers lower capacity.
+#### VIV (Video In Video)
+VIV embeds a video file within another video by dividing the frames of the secret video into blocks and hiding them in the frames of the cover video. This method provides better security and robustness but has lower capacity compared to LSB.
 
 ## Development
 
