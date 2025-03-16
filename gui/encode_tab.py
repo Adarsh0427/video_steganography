@@ -293,7 +293,6 @@ class EncodeTab(QWidget):
             self.cover_label.setText(info_text)
             
         except Exception as e:
-            ErrorHandler.log_exception(e, "Error displaying video info")
             self.cover_label.setText("Error retrieving video information")
     
     def update_capacity(self):
@@ -325,7 +324,6 @@ class EncodeTab(QWidget):
             self.check_encode_button()
             
         except Exception as e:
-            ErrorHandler.log_exception(e, "Error calculating capacity")
             self.output_label.setText("Error calculating capacity")
     
     def update_message_stats(self):

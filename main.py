@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
 from gui import MainWindow
-from utils.error_handling import logger
 
 def main():
     """Main entry point for the application"""
@@ -31,7 +30,6 @@ def main():
         sys.exit(app.exec_())
     
     except Exception as e:
-        logger.error(f"Application error: {str(e)}")
         print(f"Error: {str(e)}")
         sys.exit(1)
 
