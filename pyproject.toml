@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "video-steganography-tool"
+version = "0.1.0"
+description = "A Python-based video steganography tool using PyQt5 and various steganographic techniques."
+
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pyqt5 = "^5.15.9"
+numpy = "^1.24.0"
+opencv-python = "^4.8.0"
+scipy = "^1.11.0"
+pillow = "^10.0.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4.0"
+black = "^23.1.0"
+
+[tool.poetry.scripts]
+video-steg = "main:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
