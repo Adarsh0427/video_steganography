@@ -11,6 +11,7 @@ from PyQt5.QtCore import Qt, QSize
 from gui.encode_tab import EncodeTab
 from gui.decode_tab import DecodeTab
 from utils.error_handling import ErrorHandler, logger
+from steganography import LSBSteganography, VideoInVideoSteganography
 
 class MainWindow(QMainWindow):
     """

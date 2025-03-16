@@ -85,20 +85,21 @@ class TestDCTSteganography(unittest.TestCase):
     
     def test_hide_and_extract(self):
         """Test hiding and extracting message"""
-        message = "This is a secret message"
+        message = "This is a short secret message"  # Shortened to fit in first frame
         
         # Hide the message
         result = self.steg.hide_data(
             self.input_video_path,
             self.output_video_path,
-            message
+            message,
+            None  # No password
         )
         
         self.assertTrue(result)
         self.assertTrue(os.path.exists(self.output_video_path))
         
         # Extract the message
-        extracted = self.steg.extract_data(self.output_video_path)
+        extracted = self.steg.extract_data(self.output_video_path, None)
         self.assertEqual(extracted, message)
 
 if __name__ == '__main__':
