@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
 from gui import MainWindow
-from utils.error_handling import logger
 
 def main():
     """Main entry point for the application"""
@@ -19,7 +18,7 @@ def main():
         app.setOrganizationName("VideoSteganography")
         
         # Check if assets directory exists for icons
-        icon_path = os.path.join(os.path.dirname(__file__), "assets", "icon.png")
+        icon_path = os.path.join(os.path.dirname(__file__), "assets", "icon.svg")
         if os.path.exists(icon_path):
             app.setWindowIcon(QIcon(icon_path))
         
@@ -31,7 +30,6 @@ def main():
         sys.exit(app.exec_())
     
     except Exception as e:
-        logger.error(f"Application error: {str(e)}")
         print(f"Error: {str(e)}")
         sys.exit(1)
 

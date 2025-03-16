@@ -1,4 +1,4 @@
-from steganography.lsb import LSBSteganography
-from steganography.dct import DCTSteganography
+from .lsb import LSBSteganography
+from .video_in_video import VideoInVideoSteganography
 
-__all__ = ['LSBSteganography', 'DCTSteganography'] 
+__all__ = ['LSBSteganography', 'VideoInVideoSteganography'] 

@@ -1,18 +1,8 @@
 import traceback
-import logging
+
 from PyQt5.QtWidgets import QMessageBox
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("steganography.log"),
-        logging.StreamHandler()
-    ]
-)
 
-logger = logging.getLogger("VideoSteganography")
 
 class ErrorHandler:
     """
@@ -30,7 +20,6 @@ class ErrorHandler:
             message (str): Error message
         """
         QMessageBox.critical(parent, title, message)
-        logger.error(f"{title}: {message}")
     
     @staticmethod
     def show_warning_message(parent, title, message):
@@ -43,7 +32,6 @@ class ErrorHandler:
             message (str): Warning message
         """
         QMessageBox.warning(parent, title, message)
-        logger.warning(f"{title}: {message}")
     
     @staticmethod
     def show_info_message(parent, title, message):
@@ -56,20 +44,10 @@ class ErrorHandler:
             message (str): Information message
         """
         QMessageBox.information(parent, title, message)
-        logger.info(f"{title}: {message}")
+       
     
-    @staticmethod
-    def log_exception(e, context=""):
-        """
-        Log exception details
-        
-        Args:
-            e (Exception): Exception object
-            context (str): Context information
-        """
-        error_message = f"{context} - {str(e)}" if context else str(e)
-        logger.error(error_message)
-        logger.debug(traceback.format_exc())
+
+
         
     @staticmethod
     def handle_error(parent, e, title="Error", context=""):
@@ -83,7 +61,6 @@ class ErrorHandler:
             context (str): Context information
         """
         error_message = f"{context} - {str(e)}" if context else str(e)
-        ErrorHandler.log_exception(e, context)
         ErrorHandler.show_error_message(parent, title, error_message)
     
     @staticmethod

@@ -94,6 +94,62 @@ class LSBSteganography:
         return frame
     
     @staticmethod
+    def create_frame_folder(frame, input_video_path, output_video_path, frame_number):
+        """
+        Create a temporary folder with video frames and replace a specific frame with a custom one
+        
+        Args:
+            frame (numpy.ndarray): Custom frame to replace
+            input_video_path (str): Path to the input video
+            output_video_path (str): Path for the output video
+            frame_number (int): Frame number to replace
+        
+        Return:
+            tuple: Temporary folder path and video FPS
+        """
+        
+        # Open the video file
+        cap = cv2.VideoCapture(input_video_path)
+        if not cap.isOpened():
+            return False
+        
+        # Get video properties
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        
+        # Check if frame number is valid
+        if frame_number < 0 or frame_number >= total_frames:
+            cap.release()
+            return False
+        
+        # Create a temporary folder for frames
+        temp_folder = os.path.join(os.path.dirname(output_video_path), "temp_frames")
+        os.makedirs(temp_folder, exist_ok=True)
+        
+        # Extract all frames
+        success = True
+        count = 0
+        
+        while success:
+            success, image = cap.read()
+            if success:
+                # If this is the frame to replace, use the provided frame
+                if count == frame_number:
+                    # Resize frame if needed to match video dimensions
+                    if frame.shape[0] != height or frame.shape[1] != width:
+                        frame = cv2.resize(frame, (width, height))
+                    cv2.imwrite(os.path.join(temp_folder, f"{count:06d}.png"), frame, [cv2.IMWRITE_PNG_COMPRESSION, 0])  # Lossless PNG
+                else:
+                    cv2.imwrite(os.path.join(temp_folder, f"{count:06d}.png"), image, [cv2.IMWRITE_PNG_COMPRESSION, 0])  # Lossless PNG
+                count += 1
+        
+        cap.release()
+        
+        return temp_folder, fps
+    
+    @staticmethod
     def extract_data_from_frame(frame):
         """
         Extract data from the least significant bits of a video frame
@@ -132,8 +188,10 @@ class LSBSteganography:
             first_frame = VideoHandler.extract_frame(video_path, 0)
 
             embeded_frame = self.embed_data_into_frame(first_frame, bit_array)
+            
+            frames_folder, fps = self.create_frame_folder(embeded_frame, video_path, output_path, 0)
 
-            VideoHandler.embed_frame_into_video(embeded_frame, video_path, output_path, 0)
+            VideoHandler.recunstruct_video_from_frames(frames_folder, output_path, fps)
             
             return True
 

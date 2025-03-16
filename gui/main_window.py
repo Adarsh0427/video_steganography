@@ -10,7 +10,8 @@ from PyQt5.QtCore import Qt, QSize
 
 from gui.encode_tab import EncodeTab
 from gui.decode_tab import DecodeTab
-from utils.error_handling import ErrorHandler, logger
+from utils.error_handling import ErrorHandler
+from steganography import LSBSteganography, VideoInVideoSteganography
 
 class MainWindow(QMainWindow):
     """
@@ -166,6 +167,5 @@ class MainWindow(QMainWindow):
         
         if reply == QMessageBox.Yes:
             event.accept()
-            logger.info("Application closed")
         else:
             event.ignore() 
