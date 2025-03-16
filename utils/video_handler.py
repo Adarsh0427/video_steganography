@@ -225,11 +225,9 @@ class VideoHandler:
                         # Resize frame if needed to match video dimensions
                         if frame.shape[0] != height or frame.shape[1] != width:
                             frame = cv2.resize(frame, (width, height))
-                        cv2.imwrite(os.path.join(temp_folder, f"{count:06d}.png"), frame, 
-                               [cv2.IMWRITE_PNG_COMPRESSION, 0])  # Lossless PNG
+                        cv2.imwrite(os.path.join(temp_folder, f"{count:06d}.png"), frame, [cv2.IMWRITE_PNG_COMPRESSION, 0])  # Lossless PNG
                     else:
-                        cv2.imwrite(os.path.join(temp_folder, f"{count:06d}.png"), image, 
-                               [cv2.IMWRITE_PNG_COMPRESSION, 0])  # Lossless PNG
+                        cv2.imwrite(os.path.join(temp_folder, f"{count:06d}.png"), image, [cv2.IMWRITE_PNG_COMPRESSION, 0])  # Lossless PNG
                     count += 1
             
             cap.release()
